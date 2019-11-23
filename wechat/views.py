@@ -49,7 +49,7 @@ def get_weather(adr,key = '55fd4a7d8be5db9fbd220222fc5d0646'):
         ''' %(temp[0]['reporttime'],adr,temp[0]['casts'][0]['dayweather'],temp[0]['casts'][0]['daytemp'],temp[0]['casts'][0]['daywind'],temp[0]['casts'][0]['daypower'],temp[0]['casts'][0]['nightweather'],temp[0]['casts'][0]['nighttemp'],temp[0]['casts'][0]['nightwind'],temp[0]['casts'][0]['nightpower'])
         return weather_info
     else:
-        return default_msg
+        return reply_content
 
 
 '''调用思知机器人'''
