@@ -21,7 +21,7 @@ reply_content = '''
 您可以进行自助咨询：
 查询天气的格式为“xx天气”，xx可以是市、县、也可以是区，
 例如“北京天气”、“鹿泉天气”、“大兴天气”，查询出相应地方的天气
-回复“192.168.1.1IP查询”，查询IP地址所属地区,直接输入“IP查询”，查询当前IP地址.
+回复“192.168.1.1IP查询”，查询IP地址所属地区,直接输入“IP查询”，查询服务器IP地址.
 回复“0”查看帮助信息！
 '''
 
@@ -81,7 +81,7 @@ def get_ip_location(ip,key = '55fd4a7d8be5db9fbd220222fc5d0646'):
 '''调用思知机器人'''
 def robot_wechat(content):
     url = 'https://api.ownthink.com/bot?spoken=%s' % content
-    res = requests.get(url).json()['data']['info']['text'] + "----回复“0”查看帮助信息{[(-_-)(-_-)]}zzz"
+    res = requests.get(url).json()['data']['info']['text'] + '''----回复“0”查看帮助信息{[(-_-)(-_-)]}zzz'''
     print(res)
     return res
 
