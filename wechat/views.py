@@ -6,7 +6,6 @@ import requests,wechatpy,time
 
 '''全局变量'''
 token = 'huiduowulian'  # 微信公众号平台设置的token
-#default_msg = '''查询天气的格式为“xx天气”，xx可以是市、县、也可以是区，例如“北京天气”、“鹿泉天气”、“大兴天气”，就会查询出相应地方的天气'''
 access_token = ''
 '''
 解决access_token过期问题：
@@ -18,44 +17,71 @@ access_token = ''
 access_token_create_time = 0
 reply_content = '''
 您好，感谢您的关注与支持！
-由于后台消息回复人数众多，您可以先咨询：
+微信公众号带有聊天的功能，你可以发送任意内容和她聊天。
+您可以进行自助咨询：
 查询天气的格式为“xx天气”，xx可以是市、县、也可以是区，
-例如“北京天气”、“鹿泉天气”、“大兴天气”，就会查询出相应地方的天气
-回复“0” 可以和机器人进行聊天，回复“退出聊天”退出和机器人的聊天
+例如“北京天气”、“鹿泉天气”、“大兴天气”，查询出相应地方的天气
+回复“192.168.1.1IP查询”，查询IP地址所属地区,直接输入“IP查询”，查询当前IP地址.
+回复“0”查看帮助信息！
 '''
-robot_flag = False  # 开启聊天机器人的标志位，False表示未开启机器人，True表示开启机器人
 
 
-# 调用高德地图天气查询API查询天气
+'''调用高德地图天气查询API查询天气'''
 def get_weather(adr,key = '55fd4a7d8be5db9fbd220222fc5d0646'):
-    url = 'https://restapi.amap.com/v3/weather/weatherInfo?city=%s&key=%s&extensions=all' %(adr,key)  # 高德天气查询地址，key为高德应用参数
-    res = requests.get(url)  # 访问高德api，并将内容返回
-    temp = res.json()['forecasts']
-    if temp:
-        '''判断天气查询结果是否为空，如果为空返回默认字符串，如果不为空返回天气信息'''
-        weather_info = '''
-        时间：%s
-        地点：%s
-        白天：
-            白天气象：%s
-            白天温度：%s 摄氏度
-            白天风向：%s
-            白天风力：%s级
-        晚上：
-            夜间气象：%s
-            夜间温度：%s 摄氏度
-            夜间风向：%s
-            夜间风力：%s级
-        ''' %(temp[0]['reporttime'],adr,temp[0]['casts'][0]['dayweather'],temp[0]['casts'][0]['daytemp'],temp[0]['casts'][0]['daywind'],temp[0]['casts'][0]['daypower'],temp[0]['casts'][0]['nightweather'],temp[0]['casts'][0]['nighttemp'],temp[0]['casts'][0]['nightwind'],temp[0]['casts'][0]['nightpower'])
-        return weather_info
+    adr = adr[:adr.find('天气')]  # 提取地址
+    print(adr)
+    if adr:  # 判断地址，如果地址不为空则进行天气查询，如果为空则返回提示信息
+        url = 'https://restapi.amap.com/v3/weather/weatherInfo?city=%s&key=%s&extensions=all' %(adr,key)  # 高德天气查询地址，key为高德应用参数
+        res = requests.get(url)  # 访问高德api，并将内容返回
+        temp = res.json()['forecasts']
+        if temp:
+            '''判断天气查询结果是否为空，如果为空返回默认字符串，如果不为空返回天气信息'''
+            weather_info = '''
+            时间：%s
+            地点：%s
+            白天：
+                白天气象：%s
+                白天温度：%s 摄氏度
+                白天风向：%s
+                白天风力：%s级
+            晚上：
+                夜间气象：%s
+                夜间温度：%s 摄氏度
+                夜间风向：%s
+                夜间风力：%s级
+            ''' %(temp[0]['reporttime'],adr,temp[0]['casts'][0]['dayweather'],temp[0]['casts'][0]['daytemp'],temp[0]['casts'][0]['daywind'],temp[0]['casts'][0]['daypower'],temp[0]['casts'][0]['nightweather'],temp[0]['casts'][0]['nighttemp'],temp[0]['casts'][0]['nightwind'],temp[0]['casts'][0]['nightpower'])
+            return weather_info
+        else:
+            return reply_content
     else:
-        return default_msg
+        return reply_content
+
+
+'''调用高德地图查询IP地址所属城市'''
+def get_ip_location(ip,key = '55fd4a7d8be5db9fbd220222fc5d0646'):
+    ip = ip[:ip.find('IP')]
+    # print(ip, 'ip')
+    if ip == '':
+        url = 'https://restapi.amap.com/v3/ip?key=%s' %key
+    else:
+        url = 'https://restapi.amap.com/v3/ip?ip=%s&key=%s' %(ip,key)
+    res = requests.get(url).json()
+    # print(res)
+    if res['province'] and res['city']:
+        temp_res = '省份：' + res['province'] + '    城市:' + res['city'] + '    城市范围坐标：' + res['rectangle']
+    elif res['province']  and res['city'] == []:
+        temp_res = res['province']
+    else:
+        temp_res = reply_content
+    # print(temp_res)
+    return temp_res
+
 
 
 '''调用思知机器人'''
 def robot_wechat(content):
     url = 'https://api.ownthink.com/bot?spoken=%s' % content
-    res = requests.get(url).json()['data']['info']['text']
+    res = requests.get(url).json()['data']['info']['text'] + "----回复“0”查看帮助信息{[(-_-)(-_-)]}zzz"
     print(res)
     return res
 
@@ -117,27 +143,18 @@ def wx(request):
     elif request.method == 'POST':  # 对接收到的信息进行处理
         msg = wechatpy.parse_message(request.body)  # 解析用户发送过来的信息
         if msg.type == 'text':
-            temp_con = msg.content
-            if temp_con == "0":  # 打开机器人
-                robot_flag = True
-                reply = wechatpy.replies.TextReply(content='您好，现在您可以开始聊天了，请发个“笑话”试试,发送“退出聊天”结束聊天！', message=msg)
-            elif robot_flag:  # 判断是否开启机器人
-                if temp_con == '退出聊天':  # 判断是否退出机器人，如果退出将标志位置为False
-                    robot_flag = False
-                    reply = wechatpy.replies.TextReply(content='期待与您的再次相遇，记得想我呦！', message=msg)
-                else:
-                    temp_robot = robot_wechat(temp_con)
-                    while not temp_robot:  #  判断robot_wechat函数是否已经返回内容，如果没返回继续调用
-                        time.sleep(0.5)
-                    reply = wechatpy.replies.TextReply(content=temp_robot, message=msg)
-            elif '天气' in temp_con:  # 进入天气查询
-                temp = temp_con[:-2]
-                if temp:
-                    reply = wechatpy.replies.TextReply(content=get_weather(temp), message=msg)
-                else:
-                    reply = wechatpy.replies.TextReply(content=reply_content, message=msg)
-            else:
+            temp_con = msg.content.upper()  # 将发送过来的字母转换为大写字母
+            if '天气' in temp_con:  # 进入天气查询
+                reply = wechatpy.replies.TextReply(content=get_weather(temp_con), message=msg)
+            elif temp_con == '0':
                 reply = wechatpy.replies.TextReply(content=reply_content, message=msg)
+            elif temp_con.endswith('IP查询'):
+                reply = wechatpy.replies.TextReply(content=get_ip_location(temp_con), message=msg)
+            else:
+                temp_robot = robot_wechat(temp_con)  # 机器人聊天回复
+                while not temp_robot:  #  判断robot_wechat函数是否已经返回内容，如果没返回继续调用
+                    time.sleep(0.5)
+                reply = wechatpy.replies.TextReply(content=temp_robot, message=msg)
 
         elif msg.type == 'image':
             reply = wechatpy.replies.TextReply(content='图片消息', message=msg)
@@ -166,3 +183,7 @@ def wx(request):
         print(wechatpy.parse_message(request.body))
         print('===========================')
         return HttpResponse('Thanks！')
+
+
+def index(request):
+    return render(request,'天天生鲜-首页.html')
