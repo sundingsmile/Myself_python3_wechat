@@ -27,7 +27,7 @@ reply_content = '''
 
 
 '''调用高德地图天气查询API查询天气'''
-def get_weather(adr,key = '55fd4a7d8be5db9fbd220222fc5d0646'):
+def get_weather(adr,key = '高德KEY'):
     adr = adr[:adr.find('天气')]  # 提取地址
     print(adr)
     if adr:  # 判断地址，如果地址不为空则进行天气查询，如果为空则返回提示信息
@@ -58,7 +58,7 @@ def get_weather(adr,key = '55fd4a7d8be5db9fbd220222fc5d0646'):
 
 
 '''调用高德地图查询IP地址所属城市'''
-def get_ip_location(ip,key = '55fd4a7d8be5db9fbd220222fc5d0646'):
+def get_ip_location(ip,key = '高德KEY'):
     ip = ip[:ip.find('IP')]
     # print(ip, 'ip')
     if ip == '':
@@ -87,7 +87,7 @@ def robot_wechat(content):
 
 
 '''获取微信公众号accesstoken'''
-def get_access_token(appid='wx9690b57a3b5f4661',appsecret='ccb08dd6eb01698327ba7e817cf023a2'):
+def get_access_token(appid='微信appid',appsecret='微信appsecret'):
     url = 'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=%s&secret=%s' %(appid,appsecret)
     res = requests.get(url)  # 获取返回值
     print(res.json())
