@@ -77,11 +77,18 @@ def get_ip_location(ip,key = '高德KEY'):
     return temp_res
 
 
-
 '''调用思知机器人'''
 def robot_wechat(content):
     url = 'https://api.ownthink.com/bot?spoken=%s' % content
     res = requests.get(url).json()['data']['info']['text'] + '''----回复“0”查看帮助信息{[(-_-)(-_-)]}zzz'''
+    print(res)
+    return res
+
+'''调用青云客智能聊天机器人'''
+def robot_wechat_qingyun(content):
+    url = 'https://api.ownthink.com/bot?appid=xiaosi&userid=user&spoken={}'
+    res = requests.get(url.format(content))
+    res = res.json()['data']['info']['text'] + '''----回复“0”查看帮助信息{[(-_-)(-_-)]}zzz'''
     print(res)
     return res
 
@@ -151,9 +158,10 @@ def wx(request):
             elif temp_con.endswith('IP查询'):
                 reply = wechatpy.replies.TextReply(content=get_ip_location(temp_con), message=msg)
             else:
-                temp_robot = robot_wechat(temp_con)  # 机器人聊天回复
+                temp_robot = 0
                 while not temp_robot:  #  判断robot_wechat函数是否已经返回内容，如果没返回继续调用
-                    time.sleep(0.5)
+                    temp_robot = robot_wechat_qingyun(temp_con)  # 机器人聊天回复
+                    #time.sleep(0.5)
                 reply = wechatpy.replies.TextReply(content=temp_robot, message=msg)
 
         elif msg.type == 'image':
